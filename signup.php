@@ -1,37 +1,86 @@
 <?php
 
-$message = "";
+$result = true;
+$name = "";
+$email = "";
+$password = "";
+$msgtype = "";
+$msg = "";
 $image = "https://cdn3.iconfinder.com/data/icons/vector-icons-6/96/256-512.png";
-$alertClasses = "hidden";
+$target_dir = 'uploads/';
 
-// Check if image file 
-if (isset($_FILES["image"]) && $_FILES["image"]["tmp_name"] !== "") {
+// read values to fill input values (signup moment)
+if (isset($_POST['signup'])) {
+    $name = $_POST["name"];
+    $email = $_POST["email"];
+    $password = $_POST["password"];
 
-    $target_dir = "uploads/";
-    $target_file = $target_dir . basename($_FILES["image"]["name"]);
-    $uploadOk = true;
+    // read user image profile
+    if (isset($_FILES['image']) && $_FILES["image"]["tmp_name"] !== "") {
 
-    $check = getimagesize($_FILES["image"]["tmp_name"]);
-    if ($check === false) {
-        $message =  "File is not an image.";
-        $alertClasses = "alert-danger";
-        $uploadOk = false;
-    } else {
+        // exemplo de target_file '/uploads/3.jpg'
+        $target_file = $target_dir . basename($_FILES['image']['name']);
+        $uploadOK = true;
 
-        if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-            $message = "The file " . basename($_FILES["image"]["name"]) . " has been uploaded";
-            $image = $target_file;
-            $alertClasses = "alert-success";
+        // Check if user is realy uploading an image
+        $check = getimagesize($_FILES["image"]["tmp_name"]);
+        if ($check === false) {
+            $result = false;
+            $msg = "Imagem de perfil inválida";
+            $msgtype = "danger";
         } else {
-            $message =  "Sorry, there was an error uploading your file.";
-            $alertClasses = "alert-danger";
+            // move uploaded file from server tmp space to our project directory
+            $result = move_uploaded_file($_FILES["image"]["tmp_name"], $target_file);
+            if ($result) {
+                // correu bem
+                $image = $target_file;
+            } else {
+                // houve erros
+                $result = false;
+                $msg = "Erro no upload da imagem de perfil";
+                $msgtype = "danger";
+            }
         }
+    }
+    // Backend code to write users on a file
+    // Now we are going to write signup user to 'user' table
+    require('config.php');
+
+    // check if email is already registered
+    $selectEmail = "select * from user where email = '$email'";
+    $emailResult = mysqli_query($connection, $selectEmail);
+    //print_r( $emailResult) ;
+
+    if (isset($emailResult)) {
+
+        if (mysqli_num_rows($emailResult) == 0) {
+            // email is not registered
+
+            // encrypt password
+            $encryptedPassword = md5($password);
+
+            $insert = "insert into user (name, email, password, profile) values ('$name', '$email', '$encryptedPassword', '$image')";
+            //print_r( $connection );
+            //echo $insert;
+            mysqli_query($connection, $insert);
+        } else {
+            $result = false;
+            $msg = "Email already registered";
+            $msgtype = "danger";
+        }
+    }
+
+
+
+    // fwrite returns false if some error exists
+    if ($result) {
+        //ok
+        $msg = "User criado com sucesso";
+        $msgtype = "success";
     }
 }
 
-
 ?>
-
 
 <!doctype html>
 <html lang="en">
@@ -47,10 +96,9 @@ if (isset($_FILES["image"]) && $_FILES["image"]["tmp_name"] !== "") {
     <div class="container">
         <h1>Sign up here ...</h1>
 
-        <div class="alert <?php echo $alertClasses; ?>" role="alert">
-            <?php echo $message; ?>
+        <div class="alert alert-<?php echo $msgtype; ?>" role="alert">
+            <?php echo $msg; ?>
         </div>
-
         <form method="post" enctype="multipart/form-data">
 
             <img src="<?php echo $image; ?>" class="img-thumbnail w-25" alt="...">
@@ -61,16 +109,16 @@ if (isset($_FILES["image"]) && $_FILES["image"]["tmp_name"] !== "") {
 
             <div class="mb-3">
                 <label for="name" class="form-label">Nome</label>
-                <input type="text" class="form-control" id="name" name="name" aria-describedby="nameHelp" value="">
+                <input type="text" class="form-control" id="name" name="name" aria-describedby="nameHelp" value="<?php echo $name; ?>">
             </div>
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp" value="">
+                <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp" value="<?php echo $email; ?>">
             </div>
 
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" aria-describedby="passwordHelp">
+                <input type="password" class="form-control" id="password" name="password" aria-describedby="passwordHelp" value="<?php echo $password; ?>">
             </div>
 
             <button type="submit" name="signup" class="btn btn-primary">Signup</button>
