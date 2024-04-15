@@ -20,7 +20,6 @@ if (isset($_POST['signup'])) {
 
         // exemplo de target_file '/uploads/3.jpg'
         $target_file = $target_dir . basename($_FILES['image']['name']);
-        $uploadOK = true;
 
         // Check if user is realy uploading an image
         $check = getimagesize($_FILES["image"]["tmp_name"]);
@@ -51,25 +50,22 @@ if (isset($_POST['signup'])) {
     $emailResult = mysqli_query($connection, $selectEmail);
     //print_r( $emailResult) ;
 
-    if (isset($emailResult)) {
 
-        if (mysqli_num_rows($emailResult) == 0) {
-            // email is not registered
+    if (mysqli_num_rows($emailResult) == 0) {
+        // email is not registered
 
-            // encrypt password
-            $encryptedPassword = md5($password);
+        // encrypt password
+        $encryptedPassword = md5($password);
 
-            $insert = "insert into user (name, email, password, profile) values ('$name', '$email', '$encryptedPassword', '$image')";
-            //print_r( $connection );
-            //echo $insert;
-            mysqli_query($connection, $insert);
-        } else {
-            $result = false;
-            $msg = "Email already registered";
-            $msgtype = "danger";
-        }
+        $insert = "insert into user (name, email, password, avatar) values ('$name', '$email', '$encryptedPassword', '$image')";
+        //print_r( $connection );
+        //echo $insert;
+        mysqli_query($connection, $insert);
+    } else {
+        $result = false;
+        $msg = "Email already registered";
+        $msgtype = "danger";
     }
-
 
 
     // fwrite returns false if some error exists
