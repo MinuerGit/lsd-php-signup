@@ -1,3 +1,51 @@
+<?php
+
+$message = "";
+$msgType = "success";
+
+if (isset($_POST["signup"])){
+print_r($_POST);
+
+require('config.php');
+
+$name = $_POST ["name"];
+$email = $_POST ["email"];
+$pwd = $_POST ["password"];
+
+$query = "select iduser from user where email = '$email'";
+$emailResult = mysqli_query($connection, $query);
+
+
+
+if (mysqli_num_rows($emailResult) == 0) {
+    $message = "User registado";
+
+    $query = "insert into user (name, email, password) values ('$name', '$email', '$pwd')";
+
+    mysqli_query($connection,$query);
+
+    echo $query;
+} else {
+    $message = "Email já se encontra registado";
+    $msgType = "danger";
+};
+
+// avatar 
+
+if (isset($_FILES['image']) && $_FILES['image']['tmp_name'] !== "") {
+    $targetFile = "./images/".uniqid().basename($_FILES["image"]["name"]);
+    move_uploaded_file($_FILES['image']['tmp_name'], $targetFile);
+};
+
+
+
+
+};
+
+
+
+?>
+
 <!doctype html>
 <html lang="en">
 
@@ -10,6 +58,15 @@
 
 <body>
     <div class="container">
+       
+    <?php if ($message !== "") { ?>
+        <div class="alert alert-<?php echo $msgType;?>" role="alert">
+        <?php echo $message; ?>
+    </div>
+     <?php }?>
+    
+
+
         <h1>Sign up here ...</h1>
 
 
