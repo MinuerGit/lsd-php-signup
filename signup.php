@@ -14,13 +14,14 @@ $pwd = $_POST ["password"];
 
 $query = "select iduser from user where email = '$email'";
 $emailResult = mysqli_query($connection, $query);
+$targetFile = "https://cdn3.iconfinder.com/data/icons/vector-icons-6/96/256-512.png";
 
 
 
 if (mysqli_num_rows($emailResult) == 0) {
     $message = "User registado";
 
-    $query = "insert into user (name, email, password) values ('$name', '$email', '$pwd')";
+    $query = "insert into user (name, email, password) values ('$name', '$email', '$pwd', '$targetFile')";
 
     mysqli_query($connection,$query);
 
@@ -72,7 +73,7 @@ if (isset($_FILES['image']) && $_FILES['image']['tmp_name'] !== "") {
 
         <form method="post" enctype="multipart/form-data">
 
-            <img src="https://cdn3.iconfinder.com/data/icons/vector-icons-6/96/256-512.png" class="img-thumbnail w-25" alt="...">
+            <img src="<?php echo $targetFile ?>" class="img-thumbnail w-25" alt="...">
             <div class="mb-3">
                 <input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
                 <input class="form-control" type="file" name="image" id="image">
